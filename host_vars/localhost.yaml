@@ -1,0 +1,8 @@
+terraform:
+        prod:
+                instance_type: "t2.micro"
+                environment: "production"
+
+        test:
+                instance_type: "t2.micro"
+                environment: "testing"

@@ -1,0 +1,57 @@
+- name: substitute variables
+  template:
+          src: templates/tfvars.j2
+          dest: "{{ playbook_dir }}/tf/env.tfvars"
+
+- name: Init Terraform
+  shell: |
+          cd {{ playbook_dir }}/tf;
+          terraform init
+  when: (operation == "initialize")
+  register: initialize
+
+- name: "Display output of Terraform init"
+  debug:
+          msg: "{{ initialize.stdout }}"
+  when: (operation == "initialize")
+
+- name: Terraform Plan
+  shell: |
+          cd {{ playbook_dir }}/tf;
+          terraform workspace new {{ env }}
+          terraform workspace select {{ env }}
+          terraform plan -var-file=env.tfvars -out=plan.tfplan;
+  when: (operation == "create-plan")
+  register: create_plan
+
+- name: "Display output of Terraform plan"
+  debug:
+          msg: "{{ create_plan.stdout }}"
+  when: (operation == "create-plan")
+
+- name: Create Terraform resources
+  shell: |
+          cd {{ playbook_dir }}/tf;
+          terraform workspace select {{ env }}
+          terraform apply plan.tfplan;
+  when: (operation == "create")
+  register: create
+
+- name: "Display output of Terraform apply"
+  debug:
+          msg: "{{ create.stdout }}"
+  when: (operation == "create")
+
+- name: Terraform destroy
+  shell: |
+          cd {{ playbook_dir }}/tf;
+          terraform workspace new {{ env }}
+          terraform workspace select {{ env }}
+          terraform destroy -var-file=env.tfvars -auto-approve
+  when: (operation == "destroy")
+  register: destroy
+
+- name: "Display output of Terraform destroy"
+  debug:
+          msg: "{{ destroy.stdout }}"
+  when: (operation == "destroy")

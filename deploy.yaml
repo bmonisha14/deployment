@@ -1,0 +1,5 @@
+- name: Apply configurations
+  hosts: localhost
+  connection: local
+  roles:
+          - plan
